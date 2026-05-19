@@ -3,319 +3,2276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis API</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>SentimentHub AI - Sentiment Analysis Suite</title>
+    <!-- Premium Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --border-color: rgba(255, 255, 255, 0.1);
+            --bg-color: #080b11;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(139, 92, 246, 0.4);
             --text-main: #f8fafc;
             --text-secondary: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
+            
+            /* Curated Harmonies */
+            --accent-violet: #8b5cf6;
+            --accent-violet-glow: rgba(139, 92, 246, 0.15);
+            --accent-blue: #3b82f6;
+            --accent-blue-glow: rgba(59, 130, 246, 0.15);
+            --accent-cyan: #06b6d4;
+            
+            /* Sentiment Palettes */
             --positive: #10b981;
-            --negative: #ef4444;
+            --positive-glow: rgba(16, 185, 129, 0.15);
+            --negative: #f43f5e;
+            --negative-glow: rgba(244, 63, 94, 0.15);
+            --neutral: #f59e0b;
+            --neutral-glow: rgba(245, 158, 11, 0.15);
+            
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 2rem;
+            overflow-x: hidden;
+            position: relative;
+            padding: 2rem 1rem;
         }
 
-        .container {
+        /* Ambient Glowing Backgrounds */
+        .ambient-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 50%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(80px);
+            animation: floatGlow 15s ease-in-out infinite alternate;
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 50%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(80px);
+            animation: floatGlow 18s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        .app-wrapper {
             width: 100%;
-            max-width: 600px;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            max-width: 1100px;
+            z-index: 10;
+        }
+
+        /* Sleek Header Design */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding: 1.25rem 2rem;
+            background: rgba(17, 24, 39, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 3rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: translateY(0);
-            transition: all 0.3s ease;
+            border-radius: 20px;
         }
 
-        .container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
-            border-color: rgba(255, 255, 255, 0.2);
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-violet), var(--accent-blue));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-align: center;
+            letter-spacing: -0.5px;
         }
 
-        p.subtitle {
+        .logo-text span {
+            font-size: 0.75rem;
             color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 2.5rem;
-            font-size: 0.95rem;
+            display: block;
+            margin-top: -2px;
         }
 
-        .input-group {
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--positive);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--positive);
+            border-radius: 50%;
             position: relative;
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: var(--positive);
+            border-radius: 50%;
+            animation: pulseRing 1.8s infinite;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        /* Glassmorphic Tabs Navigator */
+        .tabs-nav {
+            display: flex;
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem;
+            border-radius: 16px;
             margin-bottom: 2rem;
+            gap: 0.25rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.9rem 1rem;
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: white;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Main Container & Modules styling */
+        .module-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+            min-height: 480px;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Shared Form Elements */
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
         }
 
         textarea {
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(8, 11, 17, 0.6);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 16px;
+            padding: 1.25rem;
             color: var(--text-main);
             font-size: 1rem;
+            line-height: 1.6;
             resize: vertical;
-            min-height: 120px;
-            transition: all 0.3s ease;
+            min-height: 140px;
+            transition: var(--transition-smooth);
+            font-weight: 400;
         }
 
         textarea:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            background: rgba(15, 23, 42, 0.8);
+            border-color: var(--accent-violet);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+            background: rgba(8, 11, 17, 0.8);
         }
 
-        button {
-            width: 100%;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
+        .text-stats {
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            pointer-events: none;
+        }
+
+        /* Styled Engine Radios */
+        .engine-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .engine-option {
+            position: relative;
+        }
+
+        .engine-radio {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .engine-card {
+            display: flex;
+            flex-direction: column;
+            padding: 1.25rem;
+            background: rgba(8, 11, 17, 0.4);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: var(--transition-smooth);
+            height: 100%;
         }
 
-        button:hover {
-            background: var(--accent-hover);
+        .engine-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.02);
             transform: translateY(-2px);
         }
 
-        button:active {
-            transform: translateY(0);
+        .engine-radio:checked + .engine-card {
+            border-color: var(--accent-violet);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(59, 130, 246, 0.08));
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
         }
 
-        button:disabled {
-            background: #475569;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .result-card {
-            margin-top: 2rem;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            display: none;
-            animation: slideUp 0.4s ease forwards;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .label {
-            font-size: 1.25rem;
+        .engine-title {
+            font-size: 0.95rem;
             font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .label.positive { color: var(--positive); }
-        .label.negative { color: var(--negative); }
-
-        .score-container {
+            margin-bottom: 0.35rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .score-bar-bg {
-            width: 100px;
+        .engine-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Main Action Buttons */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-violet), var(--accent-blue));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 1.1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: #272c38;
+            color: #5d677a;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Results Card Single Analysis */
+        .single-result-wrapper {
+            margin-top: 2.5rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2.5rem;
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .result-panel {
+            background: rgba(8, 11, 17, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.5rem;
+        }
+
+        .sentiment-badge-large {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.5rem;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .sentiment-badge-large.positive {
+            background: var(--positive-glow);
+            color: var(--positive);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+
+        .sentiment-badge-large.negative {
+            background: var(--negative-glow);
+            color: var(--negative);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.1);
+        }
+
+        .sentiment-badge-large.neutral {
+            background: var(--neutral-glow);
+            color: var(--neutral);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+        }
+
+        .result-text-quote {
+            font-size: 1.1rem;
+            font-style: italic;
+            line-height: 1.6;
+            color: var(--text-main);
+            position: relative;
+            padding-left: 1rem;
+            border-left: 3px solid var(--accent-violet);
+        }
+
+        .result-meta {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* SVG Gauges and Charts */
+        .visual-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 14;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke-width: 14;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        .gauge-center-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .gauge-percentage {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .gauge-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Dual Compare Grid Layout */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .compare-card {
+            background: rgba(8, 11, 17, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .compare-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .compare-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .compare-label {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .compare-score {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .mini-progress-bar {
             height: 6px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 3px;
             overflow: hidden;
+            width: 100%;
         }
 
-        .score-bar-fill {
+        .mini-progress-fill {
             height: 100%;
             border-radius: 3px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .score-text {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .error-message {
-            color: var(--negative);
-            margin-top: 1rem;
+        /* Batch Module Specifics */
+        .dropzone-container {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
             text-align: center;
-            font-size: 0.9rem;
+            background: rgba(8, 11, 17, 0.3);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dropzone-container:hover {
+            border-color: var(--accent-violet);
+            background: rgba(139, 92, 246, 0.04);
+        }
+
+        .dropzone-icon {
+            font-size: 2.5rem;
+            color: var(--accent-violet);
+        }
+
+        .dropzone-text h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .dropzone-text p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .file-input {
             display: none;
         }
 
-        /* Loading spinner */
+        /* Progress Bar */
+        .progress-wrapper {
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar-bg {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-violet), var(--accent-blue));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Table & Dashboard Styling */
+        .batch-results-wrapper {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .table-filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .filter-btn:hover {
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-violet-glow);
+            color: var(--accent-violet);
+            border-color: var(--accent-violet);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: rgba(8, 11, 17, 0.4);
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(17, 24, 39, 0.8);
+            padding: 1rem 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .table-badge.positive {
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--positive);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .table-badge.negative {
+            background: rgba(244, 63, 94, 0.08);
+            color: var(--negative);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .table-badge.neutral {
+            background: rgba(245, 158, 11, 0.08);
+            color: var(--neutral);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .download-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Analytics Tab dashboard */
+        .analytics-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2.5rem;
+            align-items: stretch;
+        }
+
+        .analytics-widgets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .widget-card {
+            background: rgba(8, 11, 17, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .widget-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, #ffffff, var(--text-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .widget-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .donut-panel {
+            background: rgba(8, 11, 17, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-svg-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin-bottom: 1.5rem;
+        }
+
+        .donut-chart-svg {
+            transform: rotate(-90deg);
+        }
+
+        .donut-legend {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .legend-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+        }
+
+        .legend-name {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.1rem;
+        }
+
+        .legend-value {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Developer Playground Sandbox styling */
+        .sandbox-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .playground-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.25rem;
+            gap: 0.5rem;
+        }
+
+        .playground-tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition-smooth);
+        }
+
+        .playground-tab-btn.active {
+            color: var(--accent-violet);
+            border-bottom-color: var(--accent-violet);
+        }
+
+        .code-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: #04060a;
+            margin-bottom: 1.5rem;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: var(--transition-smooth);
+        }
+
+        .copy-btn:hover {
+            color: var(--text-main);
+        }
+
+        pre {
+            padding: 1.25rem;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #d8dee9;
+            line-height: 1.5;
+            display: block;
+            white-space: pre-wrap;
+        }
+
+        /* JSON Response syntax highlight colours */
+        .json-key { color: #88c0d0; }
+        .json-string { color: #a3be8c; }
+        .json-number { color: #b48ead; }
+        .json-boolean { color: #ebcb8b; }
+
+        .sandbox-response-panel {
+            background: #04060a;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            min-height: 300px;
+            max-height: 480px;
+            overflow-y: auto;
+        }
+
+        /* Global Error Message */
+        .global-error {
+            display: none;
+            background: var(--negative-glow);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--negative);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Interactive spinner */
         .spinner {
             display: none;
             width: 20px;
             height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            border-top-color: transparent;
+            border-top-color: white;
             animation: spin 0.8s linear infinite;
-            margin: 0 auto;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #0b0f19;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            text-align: center;
+            border-radius: 8px;
+            padding: 0.6rem;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            font-weight: 500;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 900px) {
+            .result-layout, .analytics-layout, .sandbox-layout {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .engine-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Sentiment API</h1>
-        <p class="subtitle">Powered by Flask & DistilBERT</p>
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
 
-        <div class="input-group">
-            <textarea id="textInput" placeholder="Type a sentence here to analyze its sentiment... (e.g., 'This feature works flawlessly!')"></textarea>
-            <div id="errorMsg" class="error-message"></div>
-        </div>
-
-        <button id="analyzeBtn">
-            <span id="btnText">Analyze Sentiment</span>
-            <div id="btnSpinner" class="spinner"></div>
-        </button>
-
-        <div id="resultCard" class="result-card">
-            <div class="result-header">
-                <span id="resultLabel" class="label"></span>
-                <div class="score-container">
-                    <div class="score-bar-bg">
-                        <div id="scoreBar" class="score-bar-fill"></div>
-                    </div>
-                    <span id="scoreText" class="score-text"></span>
+    <div class="app-wrapper">
+        <!-- Premium Sleek Header -->
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon">𝝾</div>
+                <div class="logo-text">
+                    <h1>SentimentHub AI</h1>
+                    <span>Enterprise NLP Analytics Suite</span>
                 </div>
             </div>
-            <p id="analyzedText" style="color: var(--text-secondary); font-size: 0.9rem; font-style: italic;"></p>
-        </div>
+            <div class="status-badge">
+                <div class="pulse-dot"></div>
+                API Server Active
+            </div>
+        </header>
+
+        <!-- Glassmorphic Navigation Tabs -->
+        <nav class="tabs-nav">
+            <button class="tab-btn active" data-tab="single">
+                ⚡ Single Analyzer
+            </button>
+            <button class="tab-btn" data-tab="batch">
+                📦 Batch Processing
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                📊 Insights Dashboard
+            </button>
+            <button class="tab-btn" data-tab="sandbox">
+                💻 API Sandbox
+            </button>
+        </nav>
+
+        <!-- Global Error Panel -->
+        <div id="globalError" class="global-error"></div>
+
+        <!-- Glassmorphic Interactive Dashboard Module -->
+        <main class="module-container">
+            
+            <!-- TAB 1: SINGLE ANALYSIS -->
+            <section id="singleTab" class="tab-pane active">
+                <div class="textarea-wrapper">
+                    <label for="singleTextInput">Input Text for Sentiment Evaluation</label>
+                    <textarea id="singleTextInput" placeholder="Write or paste your sentence here... (e.g. 'The system is outstandingly robust, although there is a minor lag in the bulk operations.')"></textarea>
+                    <div class="text-stats">
+                        <span id="charCount">0 characters</span>
+                        <span id="wordCount">0 words</span>
+                    </div>
+                </div>
+
+                <!-- Interactive Engine Radio Selectors -->
+                <div class="engine-selector">
+                    <label>Inference Engine Model</label>
+                    <div class="engine-grid">
+                        <div class="engine-option">
+                            <input type="radio" id="vaderRadio" name="engine" value="vader" class="engine-radio">
+                            <label for="vaderRadio" class="engine-card">
+                                <span class="engine-title">⚡ VADER Express</span>
+                                <span class="engine-desc">lexicon-based, rule-based approach. Extremely fast, optimized for social media.</span>
+                            </label>
+                        </div>
+                        <div class="engine-option">
+                            <input type="radio" id="distilbertRadio" name="engine" value="distilbert" class="engine-radio" checked>
+                            <label for="distilbertRadio" class="engine-card">
+                                <span class="engine-title">🧠 DistilBERT Deep</span>
+                                <span class="engine-desc">Fine-tuned Transformer model. Excels at syntax nuance and long texts.</span>
+                            </label>
+                        </div>
+                        <div class="engine-option">
+                            <input type="radio" id="compareRadio" name="engine" value="compare" class="engine-radio">
+                            <label for="compareRadio" class="engine-card">
+                                <span class="engine-title">🔗 Compare Mode</span>
+                                <span class="engine-desc">Dual-run model evaluation. Highlights differences in scoring side-by-side.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="analyzeSingleBtn" class="btn-primary">
+                    <span>Evaluate Sentiment Sentiment</span>
+                    <div id="singleSpinner" class="spinner"></div>
+                </button>
+
+                <!-- Results Output Display -->
+                <div id="singleResult" class="single-result-wrapper">
+                    <div class="result-layout">
+                        <div class="result-details">
+                            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Analysis Breakdown</h2>
+                            
+                            <!-- Standard Result Grid -->
+                            <div id="standardResultPanel" class="result-panel">
+                                <div id="sentimentBadge" class="sentiment-badge-large">POSITIVE</div>
+                                <p id="resultQuoteText" class="result-text-quote">"This is a sample analysed response text."</p>
+                                <div class="result-meta">
+                                    <span id="engineTag">Powered by: DistilBERT Deep</span>
+                                    <span id="latencyTag">Latency: ~40ms</span>
+                                </div>
+                            </div>
+
+                            <!-- Dual-Comparison Grid -->
+                            <div id="compareResultPanel" class="compare-grid" style="display: none;">
+                                <div class="compare-card">
+                                    <div class="compare-card-title">
+                                        <span>VADER EXPRESS</span>
+                                        <span id="vaderCompBadge" class="table-badge">POSITIVE</span>
+                                    </div>
+                                    <div class="compare-row">
+                                        <span class="compare-label" id="vaderCompScoreText">92%</span>
+                                        <span class="compare-score">Confidence</span>
+                                    </div>
+                                    <div class="mini-progress-bar">
+                                        <div id="vaderCompProgress" class="mini-progress-fill" style="width: 92%; background-color: var(--positive);"></div>
+                                    </div>
+                                    <div class="compare-row" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                                        <span>Compound Score:</span>
+                                        <span id="vaderCompoundVal">+0.812</span>
+                                    </div>
+                                </div>
+
+                                <div class="compare-card">
+                                    <div class="compare-card-title">
+                                        <span>DISTILBERT DEEP</span>
+                                        <span id="distCompBadge" class="table-badge">POSITIVE</span>
+                                    </div>
+                                    <div class="compare-row">
+                                        <span class="compare-label" id="distCompScoreText">99.2%</span>
+                                        <span class="compare-score">Confidence</span>
+                                    </div>
+                                    <div class="mini-progress-bar">
+                                        <div id="distCompProgress" class="mini-progress-fill" style="width: 99.2%; background-color: var(--positive);"></div>
+                                    </div>
+                                    <div class="compare-row" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                                        <span>Inference Type:</span>
+                                        <span>Deep SST-2 Transformer</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Graphical dial/gauge -->
+                        <div id="gaugeVisualPanel" class="visual-panel">
+                            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1.5rem;">Confidence Gauge</h2>
+                            <div class="gauge-container">
+                                <svg class="gauge-svg" width="200" height="200">
+                                    <circle class="gauge-bg" cx="100" cy="100" r="80"></circle>
+                                    <circle id="gaugeFillCircle" class="gauge-fill" cx="100" cy="100" r="80" stroke="var(--accent-violet)" stroke-dasharray="502.4" stroke-dashoffset="502.4"></circle>
+                                </svg>
+                                <div class="gauge-center-info">
+                                    <div id="gaugeNumber" class="gauge-percentage">0%</div>
+                                    <div class="gauge-label">Confidence</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- TAB 2: BATCH PROCESSING -->
+            <section id="batchTab" class="tab-pane">
+                <div id="batchDropzone" class="dropzone-container">
+                    <div class="dropzone-icon">📥</div>
+                    <div class="dropzone-text">
+                        <h3>Upload File for Sentiment Scoring</h3>
+                        <p>Supports drag & drop CSV, JSON, or TXT formats (Max size: 5MB, up to 100 rows)</p>
+                    </div>
+                    <input type="file" id="batchFileInput" class="file-input" accept=".csv,.json,.txt">
+                </div>
+
+                <div style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 0.5px;">Or paste raw sentences (One sentence per line)</div>
+
+                <div class="textarea-wrapper" style="margin-bottom: 2rem;">
+                    <textarea id="batchTextInput" placeholder="Paste your multiple sentences here. For example:
+I absolutely love this new product, it is gorgeous!
+The application failed to load and crashed within seconds.
+The package arrived yesterday, it is okay."></textarea>
+                </div>
+
+                <div class="engine-selector">
+                    <label>Inference Engine Model for Batch</label>
+                    <div class="engine-grid">
+                        <div class="engine-option">
+                            <input type="radio" id="vaderBatch" name="engineBatch" value="vader" class="engine-radio">
+                            <label for="vaderBatch" class="engine-card">
+                                <span class="engine-title">⚡ VADER Express</span>
+                                <span class="engine-desc">Fast processing speeds, handles neutral classifications correctly.</span>
+                            </label>
+                        </div>
+                        <div class="engine-option">
+                            <input type="radio" id="distilbertBatch" name="engineBatch" value="distilbert" class="engine-radio" checked>
+                            <label for="distilbertBatch" class="engine-card">
+                                <span class="engine-title">🧠 DistilBERT Deep</span>
+                                <span class="engine-desc">State-of-the-art Transformer accuracy for detailed sentence semantic capture.</span>
+                            </label>
+                        </div>
+                        <div class="engine-option">
+                            <input type="radio" id="compareBatch" name="engineBatch" value="compare" class="engine-radio">
+                            <label for="compareBatch" class="engine-card">
+                                <span class="engine-title">🔗 Compare Mode</span>
+                                <span class="engine-desc">Process with both engines. Perfect for evaluating comparative performance.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="analyzeBatchBtn" class="btn-primary">
+                    <span>Initiate Batch Processing</span>
+                    <div id="batchSpinner" class="spinner"></div>
+                </button>
+
+                <!-- Processing States -->
+                <div id="batchProgress" class="progress-wrapper">
+                    <div class="progress-header">
+                        <span id="progressStateText">Processing payload inferences...</span>
+                        <span id="progressPercentText">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="progressBarFill" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Table Results Display -->
+                <div id="batchResultSection" class="batch-results-wrapper">
+                    <div class="table-filter-bar">
+                        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Inference Catalog</h2>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">All Records</button>
+                            <button class="filter-btn" data-filter="positive">Positive</button>
+                            <button class="filter-btn" data-filter="negative">Negative</button>
+                            <button class="filter-btn" data-filter="neutral">Neutral</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="batchResultsTable">
+                            <thead>
+                                <tr id="tableHeaderRow">
+                                    <th style="width: 8%;">ID</th>
+                                    <th style="width: 52%;">Text Sample</th>
+                                    <th style="width: 20%;">Sentiment</th>
+                                    <th style="width: 20%;">Score / Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchTableBody">
+                                <!-- Dynamic JS elements -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="download-actions">
+                        <button id="downloadCSVBtn" class="btn-secondary">CSV Report</button>
+                        <button id="downloadJSONBtn" class="btn-secondary">JSON Payload</button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- TAB 3: INSIGHTS DASHBOARD -->
+            <section id="analyticsTab" class="tab-pane">
+                <div class="analytics-layout">
+                    <!-- Numbers KPI widgets -->
+                    <div class="analytics-widgets">
+                        <div class="widget-card">
+                            <span class="widget-subtitle">Analysed Text Count</span>
+                            <span class="widget-value" id="kpiTotal">0</span>
+                            <span style="font-size: 0.75rem; color: var(--accent-violet); font-weight: 600;">Accumulated in session</span>
+                        </div>
+                        <div class="widget-card">
+                            <span class="widget-subtitle">Average Sentiment Score</span>
+                            <span class="widget-value" id="kpiAvgScore">0%</span>
+                            <span style="font-size: 0.75rem; color: var(--positive); font-weight: 600;">Overall positivity ratio</span>
+                        </div>
+                        <div class="widget-card">
+                            <span class="widget-subtitle">Strongest Highlight</span>
+                            <span class="widget-value" id="kpiStrongest" style="font-size: 1rem; color: var(--positive); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.5rem 0;">None</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Most positive text processed</span>
+                        </div>
+                        <div class="widget-card">
+                            <span class="widget-subtitle">Nuanced Negative</span>
+                            <span class="widget-value" id="kpiLowest" style="font-size: 1rem; color: var(--negative); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.5rem 0;">None</span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Most negative text processed</span>
+                        </div>
+                    </div>
+
+                    <!-- Donut SVG graph -->
+                    <div class="donut-panel">
+                        <h2 style="font-size: 1rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; margin-bottom: 1.5rem;">Distribution Spectrum</h2>
+                        <div class="donut-svg-wrapper">
+                            <svg class="donut-chart-svg" width="180" height="180" viewBox="0 0 42 42">
+                                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(255,255,255,0.03)" stroke-width="4.5"></circle>
+                                
+                                <!-- Segments calculated via JS -->
+                                <circle id="donutPosCircle" cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--positive)" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                                <circle id="donutNeuCircle" cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--neutral)" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                                <circle id="donutNegCircle" cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--negative)" stroke-width="4.5" stroke-dasharray="0 100" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="gauge-center-info">
+                                <div id="donutTotalText" style="font-size: 1.8rem; font-weight: 800;">0</div>
+                                <div style="font-size: 0.65rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-top: -2px;">Sentences</div>
+                            </div>
+                        </div>
+
+                        <div class="donut-legend">
+                            <div class="legend-item">
+                                <div class="legend-indicator" style="background-color: var(--positive);"></div>
+                                <span class="legend-name">Positive</span>
+                                <span class="legend-value" id="donutPosPercent">0%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-indicator" style="background-color: var(--neutral);"></div>
+                                <span class="legend-name">Neutral</span>
+                                <span class="legend-value" id="donutNeuPercent">0%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-indicator" style="background-color: var(--negative);"></div>
+                                <span class="legend-name">Negative</span>
+                                <span class="legend-value" id="donutNegPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- TAB 4: DEVELOPER API SANDBOX -->
+            <section id="sandboxTab" class="tab-pane">
+                <div class="sandbox-layout">
+                    <!-- Code Snippets Generator panel -->
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">API SDK Generator</h2>
+                        <div class="playground-tabs">
+                            <button class="playground-tab-btn active" data-lang="curl">cURL Shell</button>
+                            <button class="playground-tab-btn" data-lang="js">JavaScript (Fetch)</button>
+                            <button class="playground-tab-btn" data-lang="python">Python (Requests)</button>
+                        </div>
+
+                        <div class="code-container">
+                            <div class="code-header">
+                                <span class="code-lang" id="codeLangName">CURL</span>
+                                <button class="copy-btn" id="copyCodeBtn">
+                                    <span>Copy Code</span>
+                                </button>
+                            </div>
+                            <pre><code id="snippetCodeBlock">curl -X POST http://localhost:5000/analyze ...</code></pre>
+                        </div>
+
+                        <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); padding: 1.25rem; border-radius: 14px;">
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                💡 Endpoint Sandbox Specifications
+                            </h4>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">
+                                The application exposes a high-performance REST endpoint on <code>/analyze</code> accepting a JSON payload with <code>text</code> and <code>engine</code> parameters. Modify Single Analyzer inputs to dynamically watch the SDK templates adapt code payloads instantly.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Sandbox JSON Response viewer panel -->
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span>JSON Response Sandbox</span>
+                            <button id="runSandboxBtn" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;">Run Request</button>
+                        </h2>
+                        <div class="sandbox-response-panel">
+                            <pre><code id="sandboxJsonBlock" style="color: #61afef;">// Trigger 'Run Request' above or 'Evaluate Sentiment' under Analyzer to view full serialized response format.</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
     </div>
 
+    <!-- Core Interactive Client Execution logic -->
     <script>
-        document.getElementById('analyzeBtn').addEventListener('click', async () => {
-            const textInput = document.getElementById('textInput').value.trim();
-            const btn = document.getElementById('analyzeBtn');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
-            const resultCard = document.getElementById('resultCard');
-            const errorMsg = document.getElementById('errorMsg');
+        // Data Store
+        const appState = {
+            activeTab: 'single',
+            activeLanguage: 'curl',
+            sessionHistory: [],
+            // Accumulator values for insights dashboard
+            totalCount: 0,
+            posCount: 0,
+            neuCount: 0,
+            negCount: 0,
+            totalPositivityAccumulator: 0, // Sum of positive/confidence scores to estimate average
+            strongestText: 'None',
+            strongestScore: -1,
+            lowestText: 'None',
+            lowestScore: 2
+        };
 
-            // Reset states
-            errorMsg.style.display = 'none';
-            resultCard.style.display = 'none';
+        // DOM elements cache
+        const dom = {
+            tabs: document.querySelectorAll('.tab-btn'),
+            tabPanes: document.querySelectorAll('.tab-pane'),
+            singleInput: document.getElementById('singleTextInput'),
+            charCount: document.getElementById('charCount'),
+            wordCount: document.getElementById('wordCount'),
+            analyzeSingleBtn: document.getElementById('analyzeSingleBtn'),
+            singleSpinner: document.getElementById('singleSpinner'),
+            singleResult: document.getElementById('singleResult'),
+            standardResultPanel: document.getElementById('standardResultPanel'),
+            compareResultPanel: document.getElementById('compareResultPanel'),
+            sentimentBadge: document.getElementById('sentimentBadge'),
+            resultQuote: document.getElementById('resultQuoteText'),
+            engineTag: document.getElementById('engineTag'),
+            latencyTag: document.getElementById('latencyTag'),
+            gaugeNumber: document.getElementById('gaugeNumber'),
+            gaugeFill: document.getElementById('gaugeFillCircle'),
+            globalError: document.getElementById('globalError'),
+            
+            // Compare DOM elements
+            vaderCompBadge: document.getElementById('vaderCompBadge'),
+            vaderCompScoreText: document.getElementById('vaderCompScoreText'),
+            vaderCompProgress: document.getElementById('vaderCompProgress'),
+            vaderCompoundVal: document.getElementById('vaderCompoundVal'),
+            distCompBadge: document.getElementById('distCompBadge'),
+            distCompScoreText: document.getElementById('distCompScoreText'),
+            distCompProgress: document.getElementById('distCompProgress'),
 
-            if (!textInput) {
-                errorMsg.textContent = 'Please enter some text to analyze.';
-                errorMsg.style.display = 'block';
+            // Batch elements
+            batchDropzone: document.getElementById('batchDropzone'),
+            batchFileInput: document.getElementById('batchFileInput'),
+            batchTextInput: document.getElementById('batchTextInput'),
+            analyzeBatchBtn: document.getElementById('analyzeBatchBtn'),
+            batchSpinner: document.getElementById('batchSpinner'),
+            batchProgress: document.getElementById('batchProgress'),
+            progressBarFill: document.getElementById('progressBarFill'),
+            progressStateText: document.getElementById('progressStateText'),
+            progressPercentText: document.getElementById('progressPercentText'),
+            batchResultSection: document.getElementById('batchResultSection'),
+            batchTableBody: document.getElementById('batchTableBody'),
+            tableHeaderRow: document.getElementById('tableHeaderRow'),
+            filterBtns: document.querySelectorAll('.filter-btn'),
+            downloadCSV: document.getElementById('downloadCSVBtn'),
+            downloadJSON: document.getElementById('downloadJSONBtn'),
+
+            // Insights Elements
+            kpiTotal: document.getElementById('kpiTotal'),
+            kpiAvgScore: document.getElementById('kpiAvgScore'),
+            kpiStrongest: document.getElementById('kpiStrongest'),
+            kpiLowest: document.getElementById('kpiLowest'),
+            donutPos: document.getElementById('donutPosCircle'),
+            donutNeu: document.getElementById('donutNeuCircle'),
+            donutNeg: document.getElementById('donutNegCircle'),
+            donutTotalText: document.getElementById('donutTotalText'),
+            donutPosPercent: document.getElementById('donutPosPercent'),
+            donutNeuPercent: document.getElementById('donutNeuPercent'),
+            donutNegPercent: document.getElementById('donutNegPercent'),
+
+            // Sandbox Elements
+            sandboxTabs: document.querySelectorAll('.playground-tab-btn'),
+            snippetCodeBlock: document.getElementById('snippetCodeBlock'),
+            copyCodeBtn: document.getElementById('copyCodeBtn'),
+            runSandboxBtn: document.getElementById('runSandboxBtn'),
+            sandboxJsonBlock: document.getElementById('sandboxJsonBlock'),
+            codeLangName: document.getElementById('codeLangName')
+        };
+
+        // Navigation Controllers
+        dom.tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.getAttribute('data-tab');
+                
+                // Set Active tab styling
+                dom.tabs.forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Switch Tab Pane
+                dom.tabPanes.forEach(pane => {
+                    pane.classList.remove('active');
+                    if (pane.id === `${targetTab}Tab`) {
+                        pane.classList.add('active');
+                    }
+                });
+
+                appState.activeTab = targetTab;
+
+                // Sync code blocks in Sandbox or render charts
+                if (targetTab === 'analytics') {
+                    renderInsights();
+                } else if (targetTab === 'sandbox') {
+                    updateSandboxCode();
+                }
+            });
+        });
+
+        // Live Text Statistics Counters
+        function updateTextStats(val) {
+            const charCount = val.length;
+            const wordCount = val.trim() ? val.trim().split(/\s+/).length : 0;
+            dom.charCount.textContent = `${charCount} character${charCount !== 1 ? 's' : ''}`;
+            dom.wordCount.textContent = `${wordCount} word${wordCount !== 1 ? 's' : ''}`;
+            
+            // Real-time update code blocks in API Sandbox
+            if (appState.activeTab === 'sandbox' || true) {
+                updateSandboxCode();
+            }
+        }
+        
+        dom.singleInput.addEventListener('input', (e) => updateTextStats(e.target.value));
+
+        // Submit Single Sentiment API execution
+        dom.analyzeSingleBtn.addEventListener('click', async () => {
+            const text = dom.singleInput.value.trim();
+            const engineRadio = document.querySelector('input[name="engine"]:checked');
+            const engine = engineRadio ? engineRadio.value : 'distilbert';
+
+            // Reset UI
+            dom.globalError.style.display = 'none';
+            dom.singleResult.style.display = 'none';
+
+            if (!text) {
+                showGlobalError('Error: Please specify text contents for evaluation.');
                 return;
             }
 
-            // Loading state
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            btnSpinner.style.display = 'block';
+            // Spin Action
+            setLoadingSingle(true);
+            const startTime = performance.now();
 
             try {
                 const response = await fetch('/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: textInput })
+                    body: JSON.stringify({ text, engine })
                 });
 
                 const data = await response.json();
+                const latency = Math.round(performance.now() - startTime);
 
                 if (!response.ok) {
-                    throw new Error(data.error || 'Failed to analyze text');
+                    throw new Error(data.error || 'Evaluation endpoint failure.');
                 }
 
-                // Show results
-                document.getElementById('resultLabel').textContent = data.label;
-                document.getElementById('resultLabel').className = `label ${data.label.toLowerCase()}`;
+                // Render Response Payload
+                renderSingleResult(data, latency, engine);
+
+                // Serialise response in sandbox blocks
+                renderJsonSandbox(data);
+
+                // Populate Insights session metrics
+                integrateAnalyticsData([data], engine);
+
+            } catch (err) {
+                showGlobalError(err.message);
+            } finally {
+                setLoadingSingle(false);
+            }
+        });
+
+        function setLoadingSingle(isLoading) {
+            dom.analyzeSingleBtn.disabled = isLoading;
+            const btnText = dom.analyzeSingleBtn.querySelector('span');
+            if (isLoading) {
+                btnText.textContent = 'Analyzing syntax contexts...';
+                dom.singleSpinner.style.display = 'block';
+            } else {
+                btnText.textContent = 'Evaluate Sentiment';
+                dom.singleSpinner.style.display = 'none';
+            }
+        }
+
+        function showGlobalError(msg) {
+            dom.globalError.textContent = msg;
+            dom.globalError.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render response metrics into view cards
+        function renderSingleResult(data, latency, engine) {
+            dom.singleResult.style.display = 'block';
+
+            if (engine === 'compare') {
+                dom.standardResultPanel.style.display = 'none';
+                dom.compareResultPanel.style.display = 'grid';
                 
-                const percentage = (data.score * 100).toFixed(1);
-                document.getElementById('scoreText').textContent = `${percentage}% Confidence`;
+                const vader = data.vader;
+                const dbert = data.distilbert;
+
+                // Render VADER Card details
+                dom.vaderCompBadge.textContent = vader.label;
+                dom.vaderCompBadge.className = `table-badge ${vader.label.toLowerCase()}`;
                 
-                const scoreBar = document.getElementById('scoreBar');
-                scoreBar.style.width = '0%'; // Reset for animation
-                scoreBar.style.backgroundColor = data.label === 'POSITIVE' ? 'var(--positive)' : 'var(--negative)';
+                const vPercent = (vader.score * 100).toFixed(1);
+                dom.vaderCompScoreText.textContent = `${vPercent}%`;
+                dom.vaderCompProgress.style.width = `${vPercent}%`;
+                dom.vaderCompoundVal.textContent = vader.compound >= 0 ? `+${vader.compound.toFixed(3)}` : vader.compound.toFixed(3);
+
+                let vColor = 'var(--accent-violet)';
+                if (vader.label === 'POSITIVE') vColor = 'var(--positive)';
+                else if (vader.label === 'NEGATIVE') vColor = 'var(--negative)';
+                else vColor = 'var(--neutral)';
+                dom.vaderCompProgress.style.backgroundColor = vColor;
+
+                // Render DistilBERT Card details
+                dom.distCompBadge.textContent = dbert.label;
+                dom.distCompBadge.className = `table-badge ${dbert.label.toLowerCase()}`;
+                
+                const dPercent = (dbert.score * 100).toFixed(1);
+                dom.distCompScoreText.textContent = `${dPercent}%`;
+                dom.distCompProgress.style.width = `${dPercent}%`;
+
+                let dColor = 'var(--accent-violet)';
+                if (dbert.label === 'POSITIVE') dColor = 'var(--positive)';
+                else if (dbert.label === 'NEGATIVE') dColor = 'var(--negative)';
+                dom.distCompProgress.style.backgroundColor = dColor;
+
+                // Overall Dial confidence indicator (Use DistilBERT score as primary display dial)
+                animateGauge(dbert.score, dbert.label);
+                
+            } else {
+                dom.standardResultPanel.style.display = 'block';
+                dom.compareResultPanel.style.display = 'none';
+
+                // Standard Single Mode Layout
+                dom.sentimentBadge.textContent = data.label;
+                dom.sentimentBadge.className = `sentiment-badge-large ${data.label.toLowerCase()}`;
+                dom.resultQuote.textContent = `"${data.text}"`;
+                dom.engineTag.textContent = `Powered by: ${data.engine}`;
+                dom.latencyTag.textContent = `Latency: ~${latency}ms`;
+
+                animateGauge(data.score, data.label);
+            }
+        }
+
+        // SVG Circular Gauge Animation Controls
+        function animateGauge(score, label) {
+            const percentage = Math.round(score * 100);
+            dom.gaugeNumber.textContent = `${percentage}%`;
+
+            // SVG circle perimeter radius calculation = 2 * PI * r = 2 * 3.14159 * 80 = 502.4px
+            const perimeter = 502.4;
+            const fillOffset = perimeter - (score * perimeter);
+            
+            // Render stroke color matching label semantics
+            let strokeColor = 'var(--accent-violet)';
+            if (label === 'POSITIVE') strokeColor = 'var(--positive)';
+            else if (label === 'NEGATIVE') strokeColor = 'var(--negative)';
+            else if (label === 'NEUTRAL') strokeColor = 'var(--neutral)';
+
+            dom.gaugeFill.setAttribute('stroke', strokeColor);
+            dom.gaugeFill.style.strokeDashoffset = fillOffset;
+        }
+
+        // TAB 2: BATCH PROCESSING SYSTEM CONTROLLERS
+        
+        // Setup Drag and Drop events
+        dom.batchDropzone.addEventListener('click', () => dom.batchFileInput.click());
+        
+        dom.batchDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dom.batchDropzone.style.borderColor = 'var(--accent-violet)';
+            dom.batchDropzone.style.background = 'rgba(139, 92, 246, 0.08)';
+        });
+
+        dom.batchDropzone.addEventListener('dragleave', () => {
+            dom.batchDropzone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            dom.batchDropzone.style.background = 'rgba(8, 11, 17, 0.3)';
+        });
+
+        dom.batchDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dom.batchDropzone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            dom.batchDropzone.style.background = 'rgba(8, 11, 17, 0.3)';
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleUploadedFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        dom.batchFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleUploadedFile(e.target.files[0]);
+            }
+        });
+
+        function handleUploadedFile(file) {
+            const reader = new FileReader();
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            reader.onload = function(evt) {
+                const contents = evt.target.result;
+                let parsedRows = [];
+
+                try {
+                    if (extension === 'json') {
+                        const parsed = JSON.parse(contents);
+                        if (Array.isArray(parsed)) {
+                            parsedRows = parsed.map(item => typeof item === 'string' ? item : (item.text || item.message || JSON.stringify(item)));
+                        } else if (parsed.texts && Array.isArray(parsed.texts)) {
+                            parsedRows = parsed.texts;
+                        } else {
+                            throw new Error('Unsupported JSON format. Provide a flat string array or a key named "texts".');
+                        }
+                    } else if (extension === 'csv') {
+                        // Simple CSV parser supporting standard headers
+                        const lines = contents.split(/\r?\n/).filter(l => l.trim());
+                        if (lines.length > 0) {
+                            // Detect headers
+                            const firstLine = lines[0].toLowerCase();
+                            let textColIndex = 0;
+                            const headers = firstLine.split(',');
+                            
+                            // Guess text column index
+                            const possibleHeaders = ['text', 'message', 'body', 'sentence', 'review', 'comment'];
+                            possibleHeaders.forEach(ph => {
+                                const idx = headers.findIndex(h => h.includes(ph));
+                                if (idx !== -1) textColIndex = idx;
+                            });
+
+                            const dataLines = lines.slice(1);
+                            parsedRows = dataLines.map(line => {
+                                const cols = line.split(',');
+                                return cols[textColIndex] ? cols[textColIndex].replace(/^["']|["']$/g, '').trim() : '';
+                            }).filter(t => t);
+                        }
+                    } else {
+                        // Plain TXT line by line
+                        parsedRows = contents.split(/\r?\n/).map(line => line.trim()).filter(l => l);
+                    }
+
+                    if (parsedRows.length === 0) {
+                        throw new Error('No readable entries detected in the uploaded document.');
+                    }
+
+                    if (parsedRows.length > 100) {
+                        showGlobalError('Warning: Selected file contains more than 100 rows. Excess rows have been truncated.');
+                        parsedRows = parsedRows.slice(0, 100);
+                    }
+
+                    dom.batchTextInput.value = parsedRows.join('\n');
+                    showGlobalError(`Success: Uploaded document parsed successfully. Imported ${parsedRows.length} rows.`);
+
+                } catch (err) {
+                    showGlobalError(`Error parsing uploaded file: ${err.message}`);
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Execute batch API processing
+        dom.analyzeBatchBtn.addEventListener('click', async () => {
+            const rawText = dom.batchTextInput.value.trim();
+            const selectedEngine = document.querySelector('input[name="engineBatch"]:checked').value;
+
+            dom.globalError.style.display = 'none';
+            dom.batchResultSection.style.display = 'none';
+
+            if (!rawText) {
+                showGlobalError('Error: Please enter or upload text blocks to proceed.');
+                return;
+            }
+
+            const texts = rawText.split('\n').map(t => t.trim()).filter(t => t);
+
+            if (texts.length === 0) {
+                showGlobalError('Error: Input text lines are completely empty.');
+                return;
+            }
+
+            if (texts.length > 100) {
+                showGlobalError('Error: Maximum permitted batch size limit is 100 entries.');
+                return;
+            }
+
+            setLoadingBatch(true);
+
+            try {
+                // Initialize progress visualizer
+                dom.batchProgress.style.display = 'block';
+                setProgress(15, 'Evaluating linguistic syntax layers...');
+
+                const response = await fetch('/analyze_batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texts, engine: selectedEngine })
+                });
+
+                setProgress(60, 'Translating vectorized classifications...');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Server rejected bulk operational batch request.');
+                }
+
+                setProgress(90, 'Formatting structural layout records...');
+                
+                appState.sessionHistory = data.results;
+                renderBatchTable(data.results, selectedEngine);
+
+                // Serialise json
+                renderJsonSandbox(data);
+
+                // Process aggregated insights dashboard metrics
+                integrateAnalyticsData(data.results, selectedEngine);
+
+                setProgress(100, 'Batch processing finished.');
                 
                 setTimeout(() => {
-                    scoreBar.style.width = `${percentage}%`;
-                }, 50);
+                    dom.batchProgress.style.display = 'none';
+                    dom.batchResultSection.style.display = 'block';
+                }, 400);
 
-                document.getElementById('analyzedText').textContent = `"${data.text}"`;
-                resultCard.style.display = 'block';
-
-            } catch (error) {
-                errorMsg.textContent = error.message;
-                errorMsg.style.display = 'block';
+            } catch (err) {
+                showGlobalError(err.message);
+                dom.batchProgress.style.display = 'none';
             } finally {
-                // Remove loading state
-                btn.disabled = false;
-                btnText.style.display = 'block';
-                btnSpinner.style.display = 'none';
+                setLoadingBatch(false);
             }
         });
-        
-        // Allow Enter key to submit (Shift+Enter for new line)
-        document.getElementById('textInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('analyzeBtn').click();
+
+        function setLoadingBatch(isLoading) {
+            dom.analyzeBatchBtn.disabled = isLoading;
+            const btnText = dom.analyzeBatchBtn.querySelector('span');
+            if (isLoading) {
+                btnText.textContent = 'Processing bulk dataset...';
+                dom.batchSpinner.style.display = 'block';
+            } else {
+                btnText.textContent = 'Initiate Batch Processing';
+                dom.batchSpinner.style.display = 'none';
+            }
+        }
+
+        function setProgress(percent, msg) {
+            dom.progressPercentText.textContent = `${percent}%`;
+            dom.progressStateText.textContent = msg;
+            dom.progressBarFill.style.width = `${percent}%`;
+        }
+
+        // Render Dynamic Bulk Table Data
+        function renderBatchTable(results, engine) {
+            // Update headers dynamically for compare mode
+            const headerRow = dom.tableHeaderRow;
+            if (engine === 'compare') {
+                headerRow.innerHTML = `
+                    <th style="width: 8%;">ID</th>
+                    <th style="width: 42%;">Text Sample</th>
+                    <th style="width: 25%;">VADER Engine</th>
+                    <th style="width: 25%;">DistilBERT Engine</th>
+                `;
+            } else {
+                headerRow.innerHTML = `
+                    <th style="width: 8%;">ID</th>
+                    <th style="width: 52%;">Text Sample</th>
+                    <th style="width: 20%;">Sentiment</th>
+                    <th style="width: 20%;">Confidence / Compound</th>
+                `;
+            }
+
+            dom.batchTableBody.innerHTML = '';
+            results.forEach((row, i) => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-sentiment', (engine === 'compare' ? row.distilbert.label : row.label).toLowerCase());
+
+                if (engine === 'compare') {
+                    const vLabel = row.vader.label;
+                    const dLabel = row.distilbert.label;
+                    const vScore = (row.vader.score * 100).toFixed(0);
+                    const dScore = (row.distilbert.score * 100).toFixed(0);
+
+                    tr.innerHTML = `
+                        <td>#${i + 1}</td>
+                        <td style="font-weight: 500;">${escapeHTML(row.text)}</td>
+                        <td>
+                            <div class="table-badge ${vLabel.toLowerCase()}">${vLabel}</div>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.25rem;">(${vScore}%)</span>
+                        </td>
+                        <td>
+                            <div class="table-badge ${dLabel.toLowerCase()}">${dLabel}</div>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.25rem;">(${dScore}%)</span>
+                        </td>
+                    `;
+                } else {
+                    const label = row.label;
+                    const displayScore = (row.score * 100).toFixed(1);
+                    const isVader = row.engine && row.engine.includes('VADER');
+                    const compoundDetails = isVader ? ` / Cmp: ${row.compound.toFixed(2)}` : '';
+
+                    tr.innerHTML = `
+                        <td>#${i + 1}</td>
+                        <td style="font-weight: 500;">${escapeHTML(row.text)}</td>
+                        <td><div class="table-badge ${label.toLowerCase()}">${label}</div></td>
+                        <td style="font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 600;">
+                            ${displayScore}%${compoundDetails}
+                        </td>
+                    `;
+                }
+
+                dom.batchTableBody.appendChild(tr);
+            });
+        }
+
+        // Safe HTML utility escapes
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Table filters
+        dom.filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                dom.filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.getAttribute('data-filter');
+                const rows = dom.batchTableBody.querySelectorAll('tr');
+
+                rows.forEach(row => {
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else {
+                        const rowSent = row.getAttribute('data-sentiment');
+                        row.style.display = rowSent === filter ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Bulk Downloads / Reports Export controllers
+        dom.downloadCSV.addEventListener('click', () => {
+            if (appState.sessionHistory.length === 0) return;
+            
+            let csvContent = "data:text/csv;charset=utf-8,ID,Text,Sentiment,Confidence\n";
+            appState.sessionHistory.forEach((row, i) => {
+                const label = row.vader ? `${row.vader.label}/${row.distilbert.label}` : row.label;
+                const score = row.vader ? `${row.vader.score}/${row.distilbert.score}` : row.score;
+                
+                // Wrap text columns inside double quotes to protect commas
+                const cleanText = row.text.replace(/"/g, '""');
+                csvContent += `${i + 1},"${cleanText}",${label},${score}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `SentimentHub_Export_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        dom.downloadJSON.addEventListener('click', () => {
+            if (appState.sessionHistory.length === 0) return;
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState.sessionHistory, null, 2));
+            const link = document.createElement("a");
+            link.setAttribute("href", dataStr);
+            link.setAttribute("download", `SentimentHub_Export_${Date.now()}.json`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+
+        // TAB 3: ANALYTICS INTEGRATION ENGINE
+        function integrateAnalyticsData(newRecords, engine) {
+            newRecords.forEach(rec => {
+                appState.totalCount += 1;
+
+                // Compare modes or single modes
+                if (engine === 'compare') {
+                    // Accumulate DistilBERT as primary statistics
+                    const label = rec.distilbert.label;
+                    const score = rec.distilbert.score;
+                    
+                    if (label === 'POSITIVE') {
+                        appState.posCount += 1;
+                        appState.totalPositivityAccumulator += score;
+                    } else if (label === 'NEGATIVE') {
+                        appState.negCount += 1;
+                        appState.totalPositivityAccumulator += (1 - score);
+                    } else {
+                        appState.neuCount += 1;
+                        appState.totalPositivityAccumulator += 0.5;
+                    }
+
+                    // Highlight validations
+                    if (score > appState.strongestScore && label === 'POSITIVE') {
+                        appState.strongestScore = score;
+                        appState.strongestText = rec.text;
+                    }
+                    if (score > appState.lowestScore && label === 'NEGATIVE') {
+                        appState.lowestScore = score;
+                        appState.lowestText = rec.text;
+                    }
+
+                } else {
+                    const label = rec.label;
+                    const score = rec.score;
+
+                    if (label === 'POSITIVE') {
+                        appState.posCount += 1;
+                        appState.totalPositivityAccumulator += score;
+                        
+                        if (score > appState.strongestScore) {
+                            appState.strongestScore = score;
+                            appState.strongestText = rec.text;
+                        }
+                    } else if (label === 'NEGATIVE') {
+                        appState.negCount += 1;
+                        appState.totalPositivityAccumulator += (1 - score);
+
+                        const negEvaluatedScore = score;
+                        if (negEvaluatedScore > appState.lowestScore || appState.lowestScore === 2) {
+                            appState.lowestScore = negEvaluatedScore;
+                            appState.lowestText = rec.text;
+                        }
+                    } else {
+                        appState.neuCount += 1;
+                        appState.totalPositivityAccumulator += 0.5;
+                    }
+                }
+            });
+        }
+
+        function renderInsights() {
+            dom.kpiTotal.textContent = appState.totalCount;
+            
+            // Positivity Ratio
+            const ratio = appState.totalCount > 0 ? Math.round((appState.totalPositivityAccumulator / appState.totalCount) * 100) : 0;
+            dom.kpiAvgScore.textContent = `${ratio}%`;
+
+            dom.kpiStrongest.textContent = appState.strongestText;
+            dom.kpiStrongest.setAttribute('title', appState.strongestText);
+            
+            dom.kpiLowest.textContent = appState.lowestText;
+            dom.kpiLowest.setAttribute('title', appState.lowestText);
+
+            // Compute SVG Donut Chart percentages
+            const total = appState.totalCount;
+            if (total === 0) {
+                // Default zero offsets
+                dom.donutPos.setAttribute('stroke-dasharray', '0 100');
+                dom.donutNeu.setAttribute('stroke-dasharray', '0 100');
+                dom.donutNeg.setAttribute('stroke-dasharray', '0 100');
+                dom.donutTotalText.textContent = '0';
+                dom.donutPosPercent.textContent = '0%';
+                dom.donutNeuPercent.textContent = '0%';
+                dom.donutNegPercent.textContent = '0%';
+                return;
+            }
+
+            dom.donutTotalText.textContent = total;
+
+            const posShare = (appState.posCount / total) * 100;
+            const neuShare = (appState.neuCount / total) * 100;
+            const negShare = (appState.negCount / total) * 100;
+
+            dom.donutPosPercent.textContent = `${Math.round(posShare)}%`;
+            dom.donutNeuPercent.textContent = `${Math.round(neuShare)}%`;
+            dom.donutNegPercent.textContent = `${Math.round(negShare)}%`;
+
+            // SVG Circumference is 100 representing standard dash arrays.
+            // Pos circle covers from 0 to posShare
+            dom.donutPos.setAttribute('stroke-dasharray', `${posShare} 100`);
+            dom.donutPos.setAttribute('stroke-dashoffset', '0');
+
+            // Neu circle covers next share
+            dom.donutNeu.setAttribute('stroke-dasharray', `${neuShare} 100`);
+            dom.donutNeu.setAttribute('stroke-dashoffset', `-${posShare}`);
+
+            // Neg circle covers the rest
+            dom.donutNeg.setAttribute('stroke-dasharray', `${negShare} 100`);
+            dom.donutNeg.setAttribute('stroke-dashoffset', `-${posShare + neuShare}`);
+        }
+
+
+        // TAB 4: DEVELOPER SANDBOX AND CODE TEMPLATES
+        dom.sandboxTabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                dom.sandboxTabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const lang = btn.getAttribute('data-lang');
+                appState.activeLanguage = lang;
+                dom.codeLangName.textContent = lang === 'js' ? 'JAVASCRIPT (FETCH)' : lang === 'curl' ? 'CURL SHELL' : 'PYTHON (REQUESTS)';
+                
+                updateSandboxCode();
+            });
+        });
+
+        // SDK Templates logic
+        function updateSandboxCode() {
+            const singleText = dom.singleInput.value.trim() || "Replace this sample text within the Single Analyzer to see real-time updates.";
+            const engineRadio = document.querySelector('input[name="engine"]:checked');
+            const engine = engineRadio ? engineRadio.value : 'distilbert';
+            
+            const sanitizedText = singleText.replace(/'/g, "\\'").replace(/"/g, '\\"');
+            let template = '';
+
+            if (appState.activeLanguage === 'curl') {
+                template = `curl -X POST http://localhost:5000/analyze \\
+  -H "Content-Type: application/json" \\
+  -d '{"text": "${sanitizedText}", "engine": "${engine}"}'`;
+            } else if (appState.activeLanguage === 'js') {
+                template = `fetch('http://localhost:5000/analyze', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    text: "${sanitizedText}",
+    engine: "${engine}"
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));`;
+            } else { // Python
+                template = `import requests
+
+url = "http://localhost:5000/analyze"
+payload = {
+    "text": "${sanitizedText}",
+    "engine": "${engine}"
+}
+headers = {
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`;
+            }
+
+            dom.snippetCodeBlock.textContent = template;
+        }
+
+        // Copy Snippet functionality
+        dom.copyCodeBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(dom.snippetCodeBlock.textContent).then(() => {
+                const btnSpan = dom.copyCodeBtn.querySelector('span');
+                btnSpan.textContent = 'Copied!';
+                setTimeout(() => {
+                    btnSpan.textContent = 'Copy Code';
+                }, 1500);
+            });
+        });
+
+        // Sandbox Trigger Command Execution
+        dom.runSandboxBtn.addEventListener('click', async () => {
+            const singleText = dom.singleInput.value.trim() || "Type a custom text inside the Single Analyzer first.";
+            const engineRadio = document.querySelector('input[name="engine"]:checked');
+            const engine = engineRadio ? engineRadio.value : 'distilbert';
+
+            dom.sandboxJsonBlock.textContent = '// Dispatching pipeline execution...';
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: singleText, engine })
+                });
+
+                const data = await response.json();
+                renderJsonSandbox(data);
+
+            } catch (err) {
+                dom.sandboxJsonBlock.textContent = `// Connection Error: \n ${err.message}`;
             }
         });
+
+        // Format serialized syntax coloring JSON
+        function renderJsonSandbox(obj) {
+            const formatted = JSON.stringify(obj, null, 2);
+            dom.sandboxJsonBlock.innerHTML = syntaxHighlightJson(formatted);
+        }
+
+        function syntaxHighlightJson(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // Trigger default text setups
+        updateTextStats(dom.singleInput.value);
+
     </script>
 </body>
 </html>
