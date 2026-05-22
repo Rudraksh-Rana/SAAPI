@@ -1,29 +1,93 @@
 from flask import Flask, request, jsonify, render_template
-from transformers import pipeline
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
+import os
+import requests
 
 app = Flask(__name__)
+
+# Configure NLTK data directory for serverless (read-only filesystem workaround)
+nltk_data_dir = os.path.join('/tmp', 'nltk_data') if os.environ.get('VERCEL') else None
+if nltk_data_dir:
+    if nltk_data_dir not in nltk.data.path:
+        nltk.data.path.append(nltk_data_dir)
 
 # Download VADER lexicon (needed for VADER sentiment analysis)
 try:
     nltk.data.find('vader_lexicon')
 except LookupError:
-    nltk.download('vader_lexicon')
+    if nltk_data_dir:
+        os.makedirs(nltk_data_dir, exist_ok=True)
+        nltk.download('vader_lexicon', download_dir=nltk_data_dir)
+    else:
+        nltk.download('vader_lexicon')
 
 # Initialize VADER analyzer
 vader_analyzer = SentimentIntensityAnalyzer()
 
+distilbert_model = None
+
 # Initialize the sentiment analysis pipeline using DistilBERT.
-# This model represents a great balance between accuracy and size (ideal for CPUs).
+# Try loading locally first; if not installed or fails, we fall back to Hugging Face Inference API.
 try:
-    print("Loading model 'distilbert-base-uncased-finetuned-sst-2-english'...")
+    from transformers import pipeline
+    print("Loading local model 'distilbert-base-uncased-finetuned-sst-2-english'...")
     distilbert_model = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
     print("DistilBERT model loaded successfully.")
     print("VADER sentiment analyzer ready.")
 except Exception as e:
-    distilbert_model = None
-    print(f"Error loading DistilBERT model: {e}")
+    print(f"Local DistilBERT model could not be loaded: {e}")
+    print("System will seamlessly use the cloud Hugging Face Inference API for DistilBERT mode.")
+
+def get_distilbert_sentiment(text):
+    global distilbert_model
+    
+    # 1. Try local pipeline if it was loaded successfully
+    if distilbert_model is not None:
+        try:
+            result = distilbert_model(text)[0]
+            return {
+                "label": result['label'],
+                "score": float(result['score']),
+                "engine": "DistilBERT (Deep Insights Mode)"
+            }
+        except Exception as local_err:
+            print(f"Local DistilBERT inference failed: {local_err}. Trying API fallback...")
+            
+    # 2. Try Hugging Face Inference API (Serverless Cloud Fallback)
+    HF_API_URL = "https://api-inference.huggingface.co/models/distilbert-base-uncased-finetuned-sst-2-english"
+    # Use HF_API_KEY from environment variables if present (highly recommended for production rate-limiting)
+    HF_API_KEY = os.environ.get("HF_API_KEY")
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"} if HF_API_KEY else {}
+    
+    try:
+        response = requests.post(HF_API_URL, headers=headers, json={"inputs": text}, timeout=10)
+        
+        # Hugging Face API can return a 503 while the model is loading. We can handle it gracefully.
+        if response.status_code == 503:
+            est_time = response.json().get("estimated_time", 20)
+            raise Exception(f"Hugging Face Model is waking up. Please retry in {int(est_time)} seconds.")
+            
+        if response.status_code != 200:
+            err_details = response.json().get("error", "Unknown API error")
+            raise Exception(f"Hugging Face API returned error: {err_details}")
+            
+        res_json = response.json()
+        
+        # Hugging Face text classification models return: [[{"label": "...", "score": ...}, ...]]
+        if isinstance(res_json, list) and len(res_json) > 0 and isinstance(res_json[0], list):
+            predictions = res_json[0]
+            best_prediction = max(predictions, key=lambda x: x['score'])
+            return {
+                "label": best_prediction['label'],
+                "score": float(best_prediction['score']),
+                "engine": "DistilBERT (Cloud Insights Mode)"
+            }
+        else:
+            raise Exception("Hugging Face API response structure is unexpected.")
+            
+    except Exception as api_err:
+        raise Exception(f"DistilBERT Sentiment analysis failed: {str(api_err)}")
 
 @app.route('/', methods=['GET'])
 def index():
@@ -85,23 +149,19 @@ def analyze_sentiment():
             }), 200
         
         elif engine == 'distilbert':
-            if distilbert_model is None:
-                return jsonify({"error": "DistilBERT model not loaded properly. Please check server logs."}), 500
-            
-            # Perform inference with DistilBERT - More accurate for nuanced text
-            result = distilbert_model(text)[0]
-            
-            return jsonify({
-                "text": text,
-                "label": result['label'],
-                "score": float(result['score']),
-                "engine": "DistilBERT (Deep Insights Mode)"
-            }), 200
+            # Perform inference with DistilBERT (Dynamic local pipeline or Cloud API)
+            try:
+                res = get_distilbert_sentiment(text)
+                return jsonify({
+                    "text": text,
+                    "label": res['label'],
+                    "score": res['score'],
+                    "engine": res['engine']
+                }), 200
+            except Exception as err:
+                return jsonify({"error": str(err)}), 500
 
         else:  # compare mode
-            if distilbert_model is None:
-                return jsonify({"error": "DistilBERT model not loaded properly. Please check server logs."}), 500
-            
             # VADER
             v_scores = vader_analyzer.polarity_scores(text)
             v_compound = v_scores['compound']
@@ -115,10 +175,13 @@ def analyze_sentiment():
                 v_label = 'NEUTRAL'
                 v_score = v_scores['neu']
 
-            # DistilBERT
-            d_res = distilbert_model(text)[0]
-            d_label = d_res['label']
-            d_score = d_res['score']
+            # DistilBERT (Dynamic local pipeline or Cloud API)
+            try:
+                d_res = get_distilbert_sentiment(text)
+                d_label = d_res['label']
+                d_score = d_res['score']
+            except Exception as err:
+                return jsonify({"error": f"DistilBERT failure in compare mode: {str(err)}"}), 500
 
             return jsonify({
                 "text": text,
@@ -130,8 +193,8 @@ def analyze_sentiment():
                 },
                 "distilbert": {
                     "label": d_label,
-                    "score": float(d_score),
-                    "engine": "DistilBERT (Deep Insights Mode)"
+                    "score": d_score,
+                    "engine": d_res['engine']
                 },
                 "engine": "compare"
             }), 200
@@ -206,23 +269,19 @@ def analyze_sentiment_batch():
                 summary[label] += 1
 
             elif engine == 'distilbert':
-                if distilbert_model is None:
-                    return jsonify({"error": "DistilBERT model not loaded properly. Please check server logs."}), 500
-                
-                res = distilbert_model(text)[0]
-                label = res['label']
-                results.append({
-                    "text": text,
-                    "label": label,
-                    "score": float(res['score']),
-                    "engine": "DistilBERT (Deep Insights Mode)"
-                })
-                summary[label] += 1
+                try:
+                    res = get_distilbert_sentiment(text)
+                    results.append({
+                        "text": text,
+                        "label": res['label'],
+                        "score": res['score'],
+                        "engine": res['engine']
+                    })
+                    summary[res['label']] += 1
+                except Exception as err:
+                    return jsonify({"error": f"DistilBERT failure at index {idx}: {str(err)}"}), 500
 
             else:  # compare mode
-                if distilbert_model is None:
-                    return jsonify({"error": "DistilBERT model not loaded properly. Please check server logs."}), 500
-                
                 # Run VADER
                 v_scores = vader_analyzer.polarity_scores(text)
                 v_compound = v_scores['compound']
@@ -237,9 +296,12 @@ def analyze_sentiment_batch():
                     v_score = v_scores['neu']
 
                 # Run DistilBERT
-                d_res = distilbert_model(text)[0]
-                d_label = d_res['label']
-                d_score = d_res['score']
+                try:
+                    d_res = get_distilbert_sentiment(text)
+                    d_label = d_res['label']
+                    d_score = d_res['score']
+                except Exception as err:
+                    return jsonify({"error": f"DistilBERT failure at index {idx}: {str(err)}"}), 500
 
                 results.append({
                     "text": text,
@@ -250,7 +312,7 @@ def analyze_sentiment_batch():
                     },
                     "distilbert": {
                         "label": d_label,
-                        "score": float(d_score)
+                        "score": d_score
                     },
                     "engine": "compare"
                 })
